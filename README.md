@@ -1,31 +1,39 @@
 # MH Rise Foliage Fix
 
-A [REFramework](https://github.com/praydog/REFramework) Lua script that fixes the grass flickering in **Monster Hunter Rise** (PC), where near and mid-distance grass keeps popping in and out regardless of graphics settings.
+Fixes the flickering grass, foliage and rocks in **Monster Hunter Rise** (PC) on **Linux with NVIDIA GPUs** (Proton / vkd3d-proton). Objects pop in and out depending on the camera angle, regardless of graphics settings.
+
+No mods, no modified DLLs and no game files are touched: it is a text file that tells Proton's own vkd3d-proton to apply one of its built-in shader workarounds to the affected shaders. There is no measurable performance cost.
 
 ## Cause
 
-Grass materials use alpha testing with a cutoff of `AlphaTest_Param = 0.5`. As you move away, the engine samples smaller mipmaps of the grass texture, where alpha gets averaged out. Thin blades end up hovering right around the 0.5 threshold, so they vanish and reappear as the distance changes. No in-game graphics option touches this value, and it is not caused by LOD, culling, camera dissolve or DLSS/anti-aliasing.
+Some of the game's compute shaders, including the GPU culling that decides which instanced objects (grass, foliage, rocks) are visible each frame, write to group shared memory and read it back without the barrier needed to make those writes visible to the other threads in the group. AMD and Qualcomm (Adreno/Turnip) GPUs happen to produce the right result anyway; NVIDIA's driver does not, so the culling sometimes gets wrong results and objects flicker as the camera moves.
+
+vkd3d-proton already has a workaround for this class of bug, `FORCE_TGSM_BARRIERS`, which inserts a barrier after every write to group shared memory. It is just not enabled for Monster Hunter Rise.
 
 ## Fix
 
-The script lowers `AlphaTest_Param` to `0.25` on every loaded mesh material that has it, and rescans every 2 seconds to catch meshes streamed in as you move between areas. Original values are kept, so disabling the fix restores them.
+1. Download [`quirks.txt`](quirks.txt) and save it somewhere permanent, e.g. `~/.local/share/rise-vkd3d-fix/quirks.txt`.
+2. In Steam, open Monster Hunter Rise → Properties → Launch Options and add (use the full path to the file):
+   ```
+   VKD3D_SHADER_QUIRKS=/home/<user>/.local/share/rise-vkd3d-fix/quirks.txt %command%
+   ```
+3. Launch the game. The first minutes may stutter while shaders recompile.
 
-## Installation
+`quirks.txt` applies `FORCE_TGSM_BARRIERS` only to the 217 compute shaders that use both group shared memory and atomics, which include the GPU culling shaders. The hashes identify the game's shader bytecode, so they are the same on every machine.
 
-1. Install [REFramework for MH Rise](https://www.nexusmods.com/monsterhunterrise/mods/26) (`dinput8.dll` in the game folder).
-   - On Linux/Proton, set the Steam launch options to `WINEDLLOVERRIDES="dinput8=n,b" %command%`.
-2. Copy `reframework/autorun/foliage_fix.lua` into `<game folder>/reframework/autorun/`.
-3. Launch the game. The fix is enabled by default.
+### If something still flickers
 
-## Configuration
+The shader list was captured in the Shrine Ruins and verified in the Sandy Plains. If you see flickering in an area that the list does not cover, use [`quirks-all.txt`](quirks-all.txt) instead, which applies the workaround to every shader. It costs a bit more performance, but it only affects shaders that use group shared memory.
 
-Open the REFramework menu (**Insert**) → **Script Generated UI** → **Foliage Fix**:
+## Tested on
 
-- **Enabled**: toggle the fix (restores the original values when off).
-- **Alpha-test cutoff**: game default is `0.5`; `0.25` works well. Lower values make grass slightly thicker.
+- RTX 5070 Ti, NVIDIA driver 615.78.08, CachyOS
+- Proton CachyOS 11 (vkd3d-proton 3.1.0), DirectX 12
 
-Settings are saved to `<game folder>/reframework/data/foliage_fix.json`.
+## What did not help
+
+For reference, none of these changed the flickering: Image Quality at 100% or a 60 fps cap (vkd3d-proton issue [#1347](https://github.com/HansKristian-Work/vkd3d-proton/issues/1347)), clearing shader caches, vkd3d-proton 2.8 to 3.1, `VKD3D_CONFIG` flags (`single_queue`, `no_upload_hvv`, compression toggles…), disabling `VK_EXT_device_generated_commands`, 32-bit precision and the other vkd3d-proton shader workarounds (`FORCE_DEVICE_MEMORY_BARRIER_THREAD_GROUP_COHERENCY`, `FORCE_SUBGROUP_SIZE_1`, the RE Engine culling quirks…), and lowering the grass alpha-test cutoff. An earlier version of this repo shipped an REFramework script that changed the alpha-test value per mesh; it only worked because it accidentally disabled GPU instancing for the grass, at a large CPU cost.
 
 ## Uninstall
 
-Delete `reframework/autorun/foliage_fix.lua`.
+Remove `VKD3D_SHADER_QUIRKS=…` from the launch options.
