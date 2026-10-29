@@ -19,11 +19,11 @@ vkd3d-proton already has a workaround for this class of bug, `FORCE_TGSM_BARRIER
    ```
 3. Launch the game. The first minutes may stutter while shaders recompile.
 
-`quirks.txt` applies `FORCE_TGSM_BARRIERS` only to the 217 compute shaders that use both group shared memory and atomics, which include the GPU culling shaders. The hashes identify the game's shader bytecode, so they are the same on every machine.
+`quirks.txt` applies `FORCE_TGSM_BARRIERS` to a single compute shader, `aae07660844b89cf`, found by bisecting the game's shaders. The hash identifies the game's shader bytecode, so it is the same on every machine.
 
 ### If something still flickers
 
-The shader list was captured in the Shrine Ruins and verified in the Sandy Plains. If you see flickering in an area that the list does not cover, use [`quirks-all.txt`](quirks-all.txt) instead, which applies the workaround to every shader. It costs a bit more performance, but it only affects shaders that use group shared memory.
+The fix was verified in the Shrine Ruins, the Sandy Plains and the training area. If you still see flickering somewhere, use [`quirks-all.txt`](quirks-all.txt) instead, which applies the workaround to every shader, and please open an issue. It costs a bit more performance, but it only affects shaders that use group shared memory.
 
 ## Tested on
 
