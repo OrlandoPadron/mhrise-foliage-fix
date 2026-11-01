@@ -4,6 +4,8 @@ Fixes the flickering grass, foliage and rocks in **Monster Hunter Rise** (PC) on
 
 No mods, no modified DLLs and no game files are touched: it is a text file that tells Proton's own vkd3d-proton to apply one of its built-in shader workarounds to the affected shaders. There is no measurable performance cost.
 
+> **Status:** a permanent fix has been submitted to vkd3d-proton in [HansKristian-Work/vkd3d-proton#3436](https://github.com/HansKristian-Work/vkd3d-proton/pull/3436). Once it is merged and included in a Proton release, this workaround will no longer be needed.
+
 ## Cause
 
 Some of the game's compute shaders, including the GPU culling that decides which instanced objects (grass, foliage, rocks) are visible each frame, write to group shared memory and read it back without the barrier needed to make those writes visible to the other threads in the group. AMD and Qualcomm (Adreno/Turnip) GPUs happen to produce the right result anyway; NVIDIA's driver does not, so the culling sometimes gets wrong results and objects flicker as the camera moves.
