@@ -1,6 +1,11 @@
-# MH Rise Foliage Fix
+# Monster Hunter Rise grass and foliage flickering fix for Linux (NVIDIA + Proton)
 
-Fixes flickering grass, foliage and rocks in **Monster Hunter Rise** on **Linux with NVIDIA GPUs** (Steam / Proton). No mods and no game files are changed, and there is no performance cost.
+Fixes the **flickering grass, foliage and rocks** in **Monster Hunter Rise** when playing on **Linux with an NVIDIA GPU** through Steam Proton. No mods and no game files are changed, and there is no performance cost.
+
+**Symptoms this fixes:**
+- Grass, plants and bushes flicker or pop in and out.
+- Rocks and other environment objects disappear and reappear.
+- It depends on the camera angle and distance, and no graphics setting helps.
 
 > **Status:** a permanent fix has been submitted to vkd3d-proton in [HansKristian-Work/vkd3d-proton#3436](https://github.com/HansKristian-Work/vkd3d-proton/pull/3436). Once it is part of a Proton release, this workaround is no longer needed.
 
@@ -27,6 +32,6 @@ Remove `VKD3D_SHADER_QUIRKS=…` from the launch options.
 
 ## How it works
 
-A compute shader in the game reads shared memory without the barrier it needs, which produces wrong results on NVIDIA. `quirks.txt` tells vkd3d-proton (the DirectX 12 to Vulkan layer in Proton) to apply its built-in `FORCE_TGSM_BARRIERS` workaround to that shader (`aae07660844b89cf`), which adds the missing synchronization.
+A compute shader in the game reads shared memory without the barrier it needs, which produces wrong results on NVIDIA GPUs. `quirks.txt` tells vkd3d-proton (the DirectX 12 to Vulkan layer in Proton) to apply its built-in `FORCE_TGSM_BARRIERS` workaround to that shader (`aae07660844b89cf`), which adds the missing synchronization.
 
-Tested on an RTX 5070 Ti (driver 615.78.08), CachyOS, Proton CachyOS 11, across all regions of the game.
+Tested on an RTX 5070 Ti (driver 615.78.08), CachyOS and Proton CachyOS 11, across all regions of the game. Other recent Proton versions (Proton Experimental, GE-Proton) should work the same way.
