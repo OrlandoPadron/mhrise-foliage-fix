@@ -7,7 +7,7 @@ Fixes the **flickering grass, foliage and rocks** in **Monster Hunter Rise** whe
 - Rocks and other environment objects disappear and reappear.
 - It depends on the camera angle and distance, and no graphics setting helps.
 
-> **Status:** a permanent fix has been submitted to vkd3d-proton in [HansKristian-Work/vkd3d-proton#3436](https://github.com/HansKristian-Work/vkd3d-proton/pull/3436). Once it is part of a Proton release, this workaround is no longer needed.
+> **Status:** the permanent fix was merged into vkd3d-proton in [HansKristian-Work/vkd3d-proton#3436](https://github.com/HansKristian-Work/vkd3d-proton/pull/3436) (November 2026). Once your Proton version includes a vkd3d-proton release newer than v3.1, this workaround is no longer needed.
 
 ## Install
 
